@@ -40,6 +40,11 @@ function animaster() {
 		// 	element.style.transitionDuration = `${duration}ms`;
 		// 	element.style.transform = `skewX(${angle}deg)`;
 		// },
+		diffAnim: function (element, duration, ratio) {
+			element.style.transitionDuration = `${duration}ms`;
+			this._transform.ratio = ratio;
+			element.style.transform = getTransformString(this._transform);
+		},
 	};
 
 	function makeInstantAnimation(animation) {
@@ -80,6 +85,7 @@ function animaster() {
 		addFadeOut: makeStepAnimation("fadeOut"),
 		addMove: makeStepAnimation("move"),
 		addScale: makeStepAnimation("scale"),
+		diffAnim: makeInstantAnimation("diffAnim"),
 		heartBeating: function (element) {
 			const steps = [new Step("scale", 500, 1.4), new Step("scale", 500, 1)];
 			let stop = false;
@@ -194,10 +200,15 @@ function addListeners() {
 
 	document.getElementById("scalePlay").addEventListener("click", function () {
 		const block = document.getElementById("scaleBlock");
+		const a = animaster().addScale(500, 1.25)
+		a.play(block);
+	});
+
+	document.getElementById("diffAnimPlay").addEventListener("click", function () {
+		const block = document.getElementById("diffAnimBlock");
 		const a = animaster().addMove(111, { x: 10, y: -10 });
 		const b = a.addMove(400, { x: 40, y: -40 });
 		a.play(block);
-		// animaster().scale(block, 500, 1.25);
 	});
 
 	document.getElementById("moveAndHidePlay").addEventListener("click", function () {
@@ -248,7 +259,7 @@ function addListeners() {
  * 5
  * 8
  * 9
- *
+ * 10
  * 11
  * 16
  *
