@@ -14,7 +14,6 @@ function animaster() {
 			element.style.transitionDuration = `${duration}ms`;
 			element.classList.remove("hide");
 			element.classList.add("show");
-			return this;
 		},
 		fadeOut: function (element, duration) {
 			element.style.transitionDuration = `${duration}ms`;
@@ -27,16 +26,15 @@ function animaster() {
 			element.style.transform = getTransformString(this._transform);
 		},
 		moveAndHide: function moveAndHide(element, duration, translation) {
-			animaster().move(element, duration * 2 / 5, translation);
-			animaster().fadeOut(element, duration * 3 / 5);
+			animations.move(element, (duration * 3) / 5, translation);
+			animations.fadeOut(element, (duration * 3) / 5);
 			return this;
 		},
 		showAndHide: function showAndHide(element, duration) {
-			animaster().fadeIn(element, duration / 3);
+			animations.fadeIn(element, duration / 3);
 			element.style.transitionDuration = `${duration / 3}ms`;
-			animaster().fadeOut(element, duration / 3);
-			return this;
-		}
+			animations.fadeOut(element, duration / 3);
+		},
 	};
 
 	function makeInstantAnimation(animation) {
@@ -58,6 +56,8 @@ function animaster() {
 		fadeIn: makeInstantAnimation("fadeIn"),
 		fadeOut: makeInstantAnimation("fadeOut"),
 		scale: makeInstantAnimation("scale"),
+        moveAndHide: makeInstantAnimation("moveAndHide"),
+        showAndHide: makeInstantAnimation("showAndHide"),
 		addMove: makeStepAnimation("move"),
 		addScale: makeStepAnimation("scale"),
 		play: async function (element) {
@@ -157,12 +157,12 @@ function addListeners() {
 	document.getElementById("moveAndHidePlay").addEventListener("click", function () {
 		const block = document.getElementById("moveAndHideBlock");
 		animaster().moveAndHide(block, 500, { x: 100, y: 20 });
-	})
+	});
 
 	document.getElementById("showAndHidePlay").addEventListener("click", function () {
 		const block = document.getElementById("showAndHideBlock");
 		animaster().showAndHide(block, 500);
-	})
+	});
 }
 
 /**
