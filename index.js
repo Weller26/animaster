@@ -1,12 +1,14 @@
 function animaster() {
 	function AnimatorInstance() {
 		this._steps = [];
+		this._transform = { ratio: null, translation: null };
 	}
 
 	const animations = {
 		move: function (element, duration, translation) {
 			element.style.transitionDuration = `${duration}ms`;
-			element.style.transform = getTransform(translation, null);
+			this._transform.translation = translation;
+			element.style.transform = getTransformString(this._transform);
 		},
 		fadeIn: function (element, duration) {
 			element.style.transitionDuration = `${duration}ms`;
@@ -14,6 +16,7 @@ function animaster() {
 			element.classList.add("show");
 			return this;
 		},
+<<<<<<< HEAD
         fadeOut: function fadeOut(element, duration) {
             element.style.transitionDuration = `${duration}ms`;
             element.classList.add("hide");
@@ -24,6 +27,17 @@ function animaster() {
 			element.style.transitionDuration = `${duration}ms`;
 			element.style.transform = getTransform(null, ratio);
 			return this;
+=======
+		fadeOut: function fadeOut(element, duration) {
+			element.style.transitionDuration = `${duration}ms`;
+			element.classList.add("hide");
+			element.classList.remove("show");
+		},
+		scale: function (element, duration, ratio) {
+			element.style.transitionDuration = `${duration}ms`;
+			this._transform.ratio = ratio;
+			element.style.transform = getTransformString(this._transform);
+>>>>>>> 0fd146b8526fa56c7481a5547f506f339f149839
 		},
 		moveAndHide: function moveAndHide(element, duration, translation) {
 			animaster().move(element, duration * 2 / 5, translation);
@@ -62,8 +76,8 @@ function animaster() {
 		play: async function (element) {
 			for (const step of this._steps) {
 				await new Promise((resolve) => {
+					animations[step.animation].call(this, element, step.duration, ...step.args);
 					setTimeout(() => {
-						animations[step.animation](element, step.duration, ...step.args);
 						resolve();
 					}, step.duration);
 				});
@@ -71,8 +85,9 @@ function animaster() {
 		},
 	};
 
-	function getTransform(translation, ratio) {
+	function getTransformString(transform) {
 		const result = [];
+		const { translation, ratio } = transform;
 		if (translation) {
 			result.push(`translate(${translation.x}px,${translation.y}px)`);
 		}
@@ -112,7 +127,7 @@ function addListeners() {
 	document.getElementById("fadeOutPlay").addEventListener("click", function () {
 		const block = document.getElementById("fadeOutBlock");
 		animaster().fadeOut(block, 500);
-	})
+	});
 
 	document.getElementById("movePlay").addEventListener("click", function () {
 		const block = document.getElementById("moveBlock");
@@ -131,7 +146,10 @@ function addListeners() {
 
 	document.getElementById("scalePlay").addEventListener("click", function () {
 		const block = document.getElementById("scaleBlock");
-		animaster().scale(block, 500, 1.25);
+		const a = animaster().addMove(111, { x: 10, y: -10 });
+		const b = a.addMove(400, { x: 40, y: -40 });
+        a.play(block);
+		// animaster().scale(block, 500, 1.25);
 	});
 
 	document.getElementById("moveAndHidePlay").addEventListener("click", function () {
@@ -144,3 +162,16 @@ function addListeners() {
 		animaster().showAndHide(block, 500);
 	})
 }
+
+/**
+ * what we've done
+ * 1
+ * 2
+ * 8
+ * 9
+ * 
+ * 11
+ * 16
+ * 
+ * 
+ */
