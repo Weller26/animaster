@@ -25,15 +25,18 @@ function animaster() {
 			this._transform.ratio = ratio;
 			element.style.transform = getTransformString(this._transform);
 		},
-		moveAndHide: function moveAndHide(element, duration, translation) {
-			animations.move(element, (duration * 3) / 5, translation);
+		moveAndHide: function (element, duration, translation) {
+			animations.move(element, (duration * 2) / 5, translation);
 			animations.fadeOut(element, (duration * 3) / 5);
-			return this;
 		},
-		showAndHide: function showAndHide(element, duration) {
+		showAndHide: function (element, duration) {
 			animations.fadeIn(element, duration / 3);
 			element.style.transitionDuration = `${duration / 3}ms`;
 			animations.fadeOut(element, duration / 3);
+		},
+		skewX: function (element, duration, angle) {
+			element.style.transitionDuration = `${duration}ms`;
+			element.style.transform = `skewX(${angle}deg)`;
 		},
 	};
 
@@ -56,21 +59,48 @@ function animaster() {
 		fadeIn: makeInstantAnimation("fadeIn"),
 		fadeOut: makeInstantAnimation("fadeOut"),
 		scale: makeInstantAnimation("scale"),
-        moveAndHide: makeInstantAnimation("moveAndHide"),
-        showAndHide: makeInstantAnimation("showAndHide"),
+		skewX: makeInstantAnimation("skewX"),
+		// moveAndHide: makeInstantAnimation("moveAndHide"),
+		// showAndHide: makeInstantAnimation("showAndHide"),
 		addMove: makeStepAnimation("move"),
 		addScale: makeStepAnimation("scale"),
-		play: async function (element) {
+		heartBeating: function (element) {
+			const steps = [new Step("scale", 500, 1.4), new Step("scale", 500, 1)];
 			let stop = false;
-			for (const step of this._steps) {
-				if (stop) break;
-				await new Promise((resolve) => {
-					animations[step.animation].call(this, element, step.duration, ...step.args);
-					setTimeout(() => {
-						resolve();
-					}, step.duration);
-				});
-			}
+			(async () => {
+				while (!stop) {
+					for (const step of steps) {
+						await new Promise((resolve) => {
+							animations[step.animation].call(
+								this,
+								element,
+								step.duration,
+								...step.args,
+							);
+							setTimeout(() => {
+								resolve();
+							}, step.duration);
+						});
+					}
+				}
+			})();
+			return {
+				stop: () => (stop = true),
+			};
+		},
+		play: function (element) {
+			let stop = false;
+			(async () => {
+				for (const step of this._steps) {
+					if (stop) break;
+					await new Promise((resolve) => {
+						animations[step.animation].call(this, element, step.duration, ...step.args);
+						setTimeout(() => {
+							resolve();
+						}, step.duration);
+					});
+				}
+			})();
 
 			return {
 				stop: () => (stop = true),
@@ -159,9 +189,28 @@ function addListeners() {
 		animaster().moveAndHide(block, 500, { x: 100, y: 20 });
 	});
 
+    document.getElementById("moveAndHideReset").addEventListener("click", function () {
+		const block = document.getElementById("moveAndHideBlock");
+		animaster().moveAndHide(block, 500, { x: 100, y: 20 });
+	});
+
 	document.getElementById("showAndHidePlay").addEventListener("click", function () {
 		const block = document.getElementById("showAndHideBlock");
 		animaster().showAndHide(block, 500);
+	});
+
+	let heartBeatingStopper = null;
+
+	document.getElementById("heartBeatingPlay").addEventListener("click", function () {
+		const block = document.getElementById("heartBeatingBlock");
+		heartBeatingStopper = animaster().heartBeating(block);
+	});
+
+	document.getElementById("heartBeatingStop").addEventListener("click", function () {
+		if (heartBeatingStopper) {
+			heartBeatingStopper.stop();
+		}
+		heartBeatingStopper = null;
 	});
 }
 
@@ -169,6 +218,9 @@ function addListeners() {
  * what we've done
  * 1
  * 2
+ * 3
+ * 4
+ * 5
  * 8
  * 9
  *
