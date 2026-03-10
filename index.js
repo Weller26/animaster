@@ -2,6 +2,7 @@ function animaster() {
 	function AnimatorInstance() {
 		this._steps = [];
 		this._transform = { ratio: null, translation: null };
+		this._firstShown = null;
 	}
 
 	const animations = {
@@ -125,9 +126,9 @@ function animaster() {
 			};
 		},
 		buildHandler: function () {
-			const self = this;
-			return function (element) {
-				self.play(element);
+			let self = this;
+			return function () {
+				self.play(this);
 			};
 		},
 	};
@@ -227,6 +228,15 @@ function addListeners() {
 		}
 		heartBeatingStopper = null;
 	});
+
+	const worryAnimationHandler = animaster()
+		.addMove(200, { x: 80, y: 0 })
+		.addMove(200, { x: 0, y: 0 })
+		.addMove(200, { x: 80, y: 0 })
+		.addMove(200, { x: 0, y: 0 })
+		.buildHandler();
+
+	document.getElementById("worryAnimationBlock").addEventListener("click", worryAnimationHandler);
 }
 
 /**
