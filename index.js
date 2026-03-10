@@ -15,7 +15,7 @@ function animaster() {
 			element.classList.remove("hide");
 			element.classList.add("show");
 		},
-		fadeOut: function fadeOut(element, duration) {
+		fadeOut: function (element, duration) {
 			element.style.transitionDuration = `${duration}ms`;
 			element.classList.add("hide");
 			element.classList.remove("show");
@@ -48,7 +48,9 @@ function animaster() {
 		addMove: makeStepAnimation("move"),
 		addScale: makeStepAnimation("scale"),
 		play: async function (element) {
+			let stop = false;
 			for (const step of this._steps) {
+				if (stop) break;
 				await new Promise((resolve) => {
 					animations[step.animation].call(this, element, step.duration, ...step.args);
 					setTimeout(() => {
@@ -56,6 +58,19 @@ function animaster() {
 					}, step.duration);
 				});
 			}
+
+			return {
+				stop: () => (stop = true),
+				reset: () => {
+					stop();
+				},
+			};
+		},
+		buildHandler: function () {
+			const self = this;
+			return function (element) {
+				self.play(element);
+			};
 		},
 	};
 
@@ -122,7 +137,7 @@ function addListeners() {
 		const block = document.getElementById("scaleBlock");
 		const a = animaster().addMove(111, { x: 10, y: -10 });
 		const b = a.addMove(400, { x: 40, y: -40 });
-        a.play(block);
+		a.play(block);
 		// animaster().scale(block, 500, 1.25);
 	});
 }
@@ -133,9 +148,9 @@ function addListeners() {
  * 2
  * 8
  * 9
- * 
+ *
  * 11
  * 16
- * 
- * 
+ *
+ *
  */
