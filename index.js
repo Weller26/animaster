@@ -1,21 +1,53 @@
 function animaster() {
-    this._steps = [];
+	function AnimatorInstance() {
+		this._steps = [];
+	}
 
-	const prototype = {
-		move: function move(element, duration, translation) {
+	const animations = {
+		move: function (element, duration, translation) {
 			element.style.transitionDuration = `${duration}ms`;
 			element.style.transform = getTransform(translation, null);
-			return this;
 		},
-		fadeIn: function fadeIn(element, duration) {
+		fadeIn: function (element, duration) {
 			element.style.transitionDuration = `${duration}ms`;
 			element.classList.remove("hide");
 			element.classList.add("show");
-			return this;
 		},
 		scale: function (element, duration, ratio) {
 			element.style.transitionDuration = `${duration}ms`;
 			element.style.transform = getTransform(null, ratio);
+		},
+	};
+
+	function makeInstantAnimation(animation) {
+		return function (element, duration, ...args) {
+			this.play(element);
+			animations[animation](element, duration, ...args);
+			return this;
+		};
+	}
+
+	function makeStepAnimation(animation) {
+		return function (duration, ...args) {
+			return cloneWithAnimation(this, animation, duration, ...args);
+		};
+	}
+
+	const prototype = {
+		move: makeInstantAnimation("move"),
+		fadeIn: makeInstantAnimation("fadeIn"),
+		scale: makeInstantAnimation("scale"),
+		addMove: makeStepAnimation("move"),
+		addScale: makeStepAnimation("scale"),
+		play: async function (element) {
+			for (const step of this._steps) {
+				await new Promise((resolve) => {
+					setTimeout(() => {
+						animations[step.animation](element, step.duration, ...step.args);
+						resolve();
+					}, step.duration);
+				});
+			}
 		},
 	};
 
@@ -30,7 +62,23 @@ function animaster() {
 		return result.join(" ");
 	}
 
-	Object.setPrototypeOf(animaster.prototype, prototype);
+	function cloneWithAnimation(animator, animation, duration, ...args) {
+		const copy = structuredClone(animator);
+		copy._steps.push(new Step(animation, duration, ...args));
+		Object.setPrototypeOf(copy, prototype);
+		return copy;
+	}
+
+	class Step {
+		constructor(animation, duration, ...args) {
+			this.animation = animation;
+			this.duration = duration;
+			this.args = args;
+		}
+	}
+
+	Object.setPrototypeOf(AnimatorInstance.prototype, prototype);
+	return new AnimatorInstance();
 }
 
 addListeners();
@@ -43,7 +91,17 @@ function addListeners() {
 
 	document.getElementById("movePlay").addEventListener("click", function () {
 		const block = document.getElementById("moveBlock");
-		animaster().move(block, 500, { x: 100, y: 10 });
+		const customAnimation = animaster()
+			.addMove(200, { x: 40, y: 40 })
+			.addScale(800, 1.3)
+			.addMove(200, { x: 80, y: 0 })
+			.addScale(800, 1)
+			.addMove(200, { x: 40, y: -40 })
+			.addScale(800, 0.7)
+			.addMove(200, { x: 0, y: 0 })
+			.addScale(800, 1);
+		customAnimation.play(block);
+		// animaster().move(block, 500, { x: 100, y: 10 });
 	});
 
 	document.getElementById("scalePlay").addEventListener("click", function () {
