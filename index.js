@@ -25,19 +25,20 @@ function animaster() {
 			this._transform.ratio = ratio;
 			element.style.transform = getTransformString(this._transform);
 		},
-		moveAndHide: function (element, duration, translation) {
-			animations.move(element, (duration * 2) / 5, translation);
-			animations.fadeOut(element, (duration * 3) / 5);
-		},
-		showAndHide: function (element, duration) {
-			animations.fadeIn(element, duration / 3);
-			element.style.transitionDuration = `${duration / 3}ms`;
-			animations.fadeOut(element, duration / 3);
-		},
-		skewX: function (element, duration, angle) {
-			element.style.transitionDuration = `${duration}ms`;
-			element.style.transform = `skewX(${angle}deg)`;
-		},
+		delay: function (element, duration) {},
+		// moveAndHide: function (element, duration, translation) {
+		// 	animations.move(element, (duration * 2) / 5, translation);
+		// 	animations.fadeOut(element, (duration * 3) / 5);
+		// },
+		// showAndHide: function (element, duration) {
+		// 	animations.fadeIn(element, duration / 3);
+		// 	element.style.transitionDuration = `${duration / 3}ms`;
+		// 	animations.fadeOut(element, duration / 3);
+		// },
+		// skewX: function (element, duration, angle) {
+		// 	element.style.transitionDuration = `${duration}ms`;
+		// 	element.style.transform = `skewX(${angle}deg)`;
+		// },
 	};
 
 	function makeInstantAnimation(animation) {
@@ -60,8 +61,22 @@ function animaster() {
 		fadeOut: makeInstantAnimation("fadeOut"),
 		scale: makeInstantAnimation("scale"),
 		skewX: makeInstantAnimation("skewX"),
-		// moveAndHide: makeInstantAnimation("moveAndHide"),
-		// showAndHide: makeInstantAnimation("showAndHide"),
+		moveAndHide: function (element, duration, translation) {
+			this.addMove((duration * 2) / 5, translation)
+				.addFadeOut((duration * 3) / 5)
+				.play(element);
+			return this;
+		},
+		showAndHide: function (element, duration) {
+			this.addFadeIn(duration / 3)
+				.addDelay(duration / 3)
+				.addFadeOut(duration / 3)
+				.play(element);
+			return this;
+		},
+		addDelay: makeStepAnimation("delay"),
+		addFadeIn: makeStepAnimation("fadeIn"),
+		addFadeOut: makeStepAnimation("fadeOut"),
 		addMove: makeStepAnimation("move"),
 		addScale: makeStepAnimation("scale"),
 		heartBeating: function (element) {
@@ -189,7 +204,7 @@ function addListeners() {
 		animaster().moveAndHide(block, 500, { x: 100, y: 20 });
 	});
 
-    document.getElementById("moveAndHideReset").addEventListener("click", function () {
+	document.getElementById("moveAndHideReset").addEventListener("click", function () {
 		const block = document.getElementById("moveAndHideBlock");
 		animaster().moveAndHide(block, 500, { x: 100, y: 20 });
 	});
